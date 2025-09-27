@@ -219,16 +219,46 @@ body::after{
   animation:spinSlow 60s linear infinite;
 }
 
-/* comic dot overlay for energetic pop */
-.comic-dots{
-  position:absolute;
-  inset:0;
-  background-image: radial-gradient(var(--comic-dot) 1px, transparent 1px);
-  background-size: 6px 6px;
-  opacity:0.18;
-  pointer-events:none;
-  mix-blend-mode:overlay;
+/* Tablet-specific adjustments */
+@media (min-width: 768px) and (max-width: 1024px) {
+  :root {
+    --comic-dots-opacity: 0.14;
+  }
+
+  .slide-card {
+    padding: 36px;
+    border-radius: 22px;
+  }
+
+  .btn, button, .subscribe-btn {
+    padding: 14px 20px;
+    font-size: 1.05rem;
+    border-radius: 12px;
+  }
+
+  input[type="text"], input[type="email"], .subscribe-input {
+    padding: 12px 14px;
+    font-size: 1.02rem;
+  }
+
+  /* Make beaker and pendulum stages larger on tablets */
+  .lab-stage { transform: scale(1.08); }
+  .pendulum { transform: scale(1.06); }
+
+  /* Bigger Swiper nav targets for touch */
+  .swiper-button-next, .swiper-button-prev {
+    width: 64px;
+    height: 64px;
+    background-size: 34px;
+    border-radius: 999px;
+  }
+
+  /* Slightly stronger halftone for tablet screens */
+  .comic-dots { opacity: var(--comic-dots-opacity, 0.12); }
 }
+
+/* comic dot overlay for energetic pop */
+
 
 /* Promo slide styles */
 .promo-slide .h1{ letter-spacing:2px; font-weight:900; }

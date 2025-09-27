@@ -12,46 +12,24 @@ import subscribeBadge from './assets/subscribe-badge.svg'
 const mandalaLayers = [
   {
     style: {
-      width: '640px',
-      height: '640px',
-      top: '-18%',
-      left: '-8%',
-      '--duration': '55s',
-      '--floatDur': '22s',
-      '--opacity': '0.58'
-    }
-  },
-  {
-    style: {
-      width: '520px',
-      height: '520px',
-      top: '60%',
-      left: '72%',
-      '--duration': '68s',
-      '--floatDur': '18s',
-      '--opacity': '0.45'
-    }
-  },
-  {
-    style: {
-      width: '440px',
-      height: '440px',
-      top: '8%',
-      left: '62%',
-      '--duration': '75s',
-      '--floatDur': '26s',
-      '--opacity': '0.5'
-    }
-  },
-  {
-    style: {
-      width: '360px',
-      height: '360px',
-      top: '68%',
-      left: '-12%',
-      '--duration': '58s',
-      '--floatDur': '16s',
+      width: '560px',
+      height: '560px',
+      top: '-12%',
+      left: '-6%',
+      '--duration': '60s',
+      '--floatDur': '20s',
       '--opacity': '0.52'
+    }
+  },
+  {
+    style: {
+      width: '420px',
+      height: '420px',
+      top: '62%',
+      left: '68%',
+      '--duration': '72s',
+      '--floatDur': '24s',
+      '--opacity': '0.45'
     }
   }
 ]
@@ -59,35 +37,17 @@ const mandalaLayers = [
 const mandalaOrbs = [
   {
     style: {
-      width: '260px',
-      height: '260px',
-      top: '12%',
-      left: '-4%',
-      '--floatDur': '16s',
-      '--opacity': '0.38'
-    }
-  },
-  {
-    style: {
       width: '220px',
       height: '220px',
-      top: '68%',
-      left: '68%',
-      '--floatDur': '14s',
-      '--opacity': '0.42'
-    }
-  },
-  {
-    style: {
-      width: '180px',
-      height: '180px',
-      top: '38%',
-      left: '82%',
-      '--floatDur': '12s',
-      '--opacity': '0.35'
+      top: '24%',
+      left: '72%',
+      '--floatDur': '18s',
+      '--opacity': '0.36'
     }
   }
 ]
+
+
 
 function useEnterAnimation(deps=[]){
   const scope = useRef(null)
@@ -151,13 +111,13 @@ function DefinitionSlide(){
         </div>
         <div className="row" style={{justifyContent:'space-between'}}>
           <div className="card">
-            <div> <b>Matter</b> -- stuff & structure</div>
-            <div>! <b>Energy</b> -- ability to do work</div>
-            <div>-- <b>Motion</b> -- position changing</div>
-            <div> <b>Models</b> -- math + logic</div>
+            <div><b>Matter</b>: stuff and structure</div>
+            <div><b>Energy</b>: ability to do work</div>
+            <div><b>Motion</b>: position changing</div>
+            <div><b>Models</b>: math plus logic</div>
           </div>
           <div className="card">
-            <div> <b>Method</b>: Observe - Hypothesize - Predict - Test - Revise.</div>
+            <div><b>Method</b>: Observe, hypothesize, predict, test, revise.</div>
             <div className="label">A workflow more disciplined than a monk's morning routine.</div>
           </div>
         </div>
@@ -252,19 +212,37 @@ function MotionSlide(){
 function ForceSlide(){
   const scope = useEnterAnimation([])
   const boxRef = useRef(null)
-  const [pushing, setPushing] = useState(false)
-  const [v, setV] = useState(0)
+  const pushRef = useRef(false)
+  const velocityRef = useRef(0)
+  const labelRef = useRef(null)
+  const frameRef = useRef(0)
 
   useEffect(()=>{
-    const id = gsap.ticker.add(()=>{
-      let vel = v
-      if(pushing) vel += 0.12  // apply force
-      vel *= 0.985             // friction
-      setV(vel)
-      gsap.set(boxRef.current, {x:`+=${vel}`})
-    })
-    return () => { gsap.ticker.remove(id) }
-  }, [pushing, v])
+    const update = ()=>{
+      const box = boxRef.current
+      if(!box) return
+      let velocity = velocityRef.current
+      if(pushRef.current) velocity += 0.12
+      velocity *= 0.985
+      if(Math.abs(velocity) < 0.001) velocity = 0
+      velocityRef.current = velocity
+      gsap.set(box, {x:`+=${velocity}`})
+      frameRef.current += 1
+      if(labelRef.current && frameRef.current % 3 === 0){
+        labelRef.current.textContent = `Velocity: ${velocity.toFixed(2)} px/tick`
+      }
+    }
+    gsap.ticker.add(update)
+    return ()=>gsap.ticker.remove(update)
+  },[])
+
+  const setPushState = (state)=>()=>{
+    pushRef.current = state
+  }
+
+  useEffect(()=>{
+    return ()=>{ pushRef.current = false }
+  },[])
 
   return (
     <div ref={scope} className="slide-card">
@@ -278,13 +256,23 @@ function ForceSlide(){
           <div className="ground" />
         </div>
         <div className="row">
-          <button className="btn" onMouseDown={()=>setPushing(true)} onMouseUp={()=>setPushing(false)} onTouchStart={()=>setPushing(true)} onTouchEnd={()=>setPushing(false)}>Push go!</button>
-          <span className="label">Velocity: {v.toFixed(2)} px/tick</span>
+          <button
+            className="btn"
+            onMouseDown={setPushState(true)}
+            onMouseUp={setPushState(false)}
+            onMouseLeave={setPushState(false)}
+            onTouchStart={setPushState(true)}
+            onTouchEnd={setPushState(false)}
+            onTouchCancel={setPushState(false)}
+          >Push</button>
+          <span ref={labelRef} className="label">Velocity: 0.00 px/tick</span>
         </div>
       </div>
     </div>
   )
 }
+
+
 
 function EnergySlide(){
   const scope = useEnterAnimation([])
@@ -307,7 +295,7 @@ function EnergySlide(){
     <div ref={scope} className="slide-card">
       <div className="slide-inner">
         <div>
-          <h1 className="h1">Energy: height - speed. <span className="punch">Potential</span> becomes <span className="punch">kinetic</span>.</h1>
+          <h1 className="h1">Energy: height plus speed. <span className="punch">Potential</span> becomes <span className="punch">kinetic</span>.</h1>
           <p className="kicker">Raise the starting height, then bounce.</p>
         </div>
         <div className="stage">
@@ -317,7 +305,7 @@ function EnergySlide(){
         <div className="row">
           <label className="label">Height: {h}px</label>
           <input className="input" type="range" min="40" max="160" step="5" value={h} onChange={(e)=>setH(parseInt(e.target.value))}/>
-          <button className="btn" onClick={dropBounce}>Bounce *</button>
+          <button className="btn" onClick={dropBounce}>Bounce!</button>
         </div>
       </div>
     </div>
@@ -462,7 +450,7 @@ function MagnetSlide(){
         </div>
         <div ref={stageRef} className={`stage magnet-stage ${active ? 'on' : 'off'}`}>
           <div className="magnet-field">
-            {[...Array(6)].map((_,i)=> (
+            {Array.from({length:4}).map((_,i)=> (
               <div key={i} className="magnet-line" style={{'--index': i}} />
             ))}
           </div>
@@ -702,10 +690,15 @@ function ExperimentLabSlide(){
   const [concentration, setConcentration] = useState(30)
   const bubblesRef = useRef(null)
   // create a small pool of CSS-animated bubbles and update on concentration change
-  useEffect(()=>{
-    const node = bubblesRef.current
-    if(!node) return
-    const MAX = 20
+    useEffect(() => {
+      const node = bubblesRef.current
+      if (!node) return
+      const getMaxForWidth = (width) => {
+        if (width >= 768 && width <= 1024) return 16 // tablet
+        if (width > 1024) return 12
+        return 10
+      }
+      let MAX = getMaxForWidth(window.innerWidth || document.documentElement.clientWidth)
     if(!node.dataset.inited){
       // create pool
       for(let i=0;i<MAX;i++){
@@ -739,17 +732,17 @@ function ExperimentLabSlide(){
 
     // pause animations when the slide is not active (reduce CPU)
     const slideEl = scope.current && scope.current.closest ? scope.current.closest('.swiper-slide') : null
-    if(slideEl){
-      const observer = new MutationObserver(()=>{
-        const active = slideEl.classList.contains('swiper-slide-active')
-        Array.from(bubblesRef.current.children).forEach(b => b.style.animationPlayState = active ? 'running' : 'paused')
-      })
-      observer.observe(slideEl, {attributes:true, attributeFilter:['class']})
-      // set initial state
-      const active = slideEl.classList.contains('swiper-slide-active')
-      Array.from(bubblesRef.current.children).forEach(b => b.style.animationPlayState = active ? 'running' : 'paused')
-      return ()=>observer.disconnect()
-    }
+      if (slideEl) {
+        const applyState = () => {
+          const active = slideEl.classList.contains('swiper-slide-active') || slideEl.dataset.active === '1'
+          Array.from(bubblesRef.current.children).forEach(b => b.style.animationPlayState = active ? 'running' : 'paused')
+        }
+        const observer = new MutationObserver(applyState)
+        observer.observe(slideEl, {attributes:true, attributeFilter:['class','data-active']})
+        // set initial state
+        applyState()
+        return ()=>observer.disconnect()
+      }
   }, [concentration, scope])
 
   return (
@@ -821,7 +814,7 @@ function QuizSlide(){
           })}
         </div>
         {celebrate && <svg className="confetti">
-          {[...Array(20)].map((_,i)=>{
+    {[...Array(8)].map((_,i)=>{
             const x = Math.random()*100; const y = -5 - Math.random()*10
             const dur = 0.8+Math.random()*0.7
             const size = 4+Math.random()*6
@@ -858,32 +851,6 @@ function OutroSlide(){
 
 export default function App(){
   const swiperRef = useRef(null)
-  // inject comic-dot overlays into each slide-card for a halftone comic effect
-  useEffect(()=>{
-    const ensureDots = (root=document)=>{
-      const slides = root.querySelectorAll('.slide-card')
-      slides.forEach(s => {
-        if(!s.querySelector(':scope > .comic-dots')){
-          const d = document.createElement('div')
-          d.className = 'comic-dots'
-          d.setAttribute('aria-hidden','true')
-          s.insertBefore(d, s.firstChild)
-        }
-      })
-    }
-
-    ensureDots()
-    // observe additions (Swiper may create slides dynamically)
-    const mo = new MutationObserver((list)=>{
-      for(const m of list){
-        if(m.type === 'childList' && m.addedNodes.length){
-          ensureDots(m.target)
-        }
-      }
-    })
-    mo.observe(document.querySelector('.content-shell') || document.body, {childList:true, subtree:true})
-    return ()=>mo.disconnect()
-  },[])
   useEffect(()=>{
     const handler = (e)=>{
       if(e.key.toLowerCase()==='r'){
@@ -901,6 +868,7 @@ export default function App(){
   },[])
 
   return (
+    // lightweight mode enabled by default to reduce lag on lower-end devices
     <div className="app">
       <div className="mandala-bg" aria-hidden="true">
         {mandalaLayers.map((layer, index) => (
@@ -921,43 +889,45 @@ export default function App(){
       <div className="content-shell">
         <div className="header">
           <div className="logo">CP</div>
-          <div className="brand"><b>What is physics?</b> - Swipe to learn</div>
+          <div className="brand"><b>Cartoon Physics</b> - Swipe to learn</div>
         </div>
-        <Swiper
-          modules={[Pagination, Navigation, Keyboard, EffectCreative]}
-          pagination={{ clickable:true, type:'bullets' }}
-          navigation
-          keyboard={{enabled:true}}
-          effect="creative"
-          creativeEffect={{
-            prev: { shadow: true, translate: ['-20%', 0, -1] },
-            next: { translate: ['100%', 0, 0] },
-          }}
-          onSwiper={(s)=>{swiperRef.current = s}}
-          className="mySwiper"
-        >
-          <SwiperSlide><TitleSlide/></SwiperSlide>
-          <SwiperSlide><DefinitionSlide/></SwiperSlide>
-          <SwiperSlide>
-            <NewtonSlide />
-          </SwiperSlide>
-          <SwiperSlide><GravitySlide/></SwiperSlide>
-          <SwiperSlide><MotionSlide/></SwiperSlide>
-          <SwiperSlide><ForceSlide/></SwiperSlide>
-          <SwiperSlide><EnergySlide/></SwiperSlide>
-          <SwiperSlide><PendulumSlide/></SwiperSlide>
-          <SwiperSlide><MagnetSlide/></SwiperSlide>
-          <SwiperSlide><LightMixSlide/></SwiperSlide>
-          <SwiperSlide><WaveSlide/></SwiperSlide>
-          <SwiperSlide><ExperimentLabSlide/></SwiperSlide>
-          <SwiperSlide>
-            <SubscribeSlide />
-          </SwiperSlide>
-          <SwiperSlide><QuizSlide/></SwiperSlide>
-          <SwiperSlide><PromoSlide/></SwiperSlide>
-          <SwiperSlide><OutroSlide/></SwiperSlide>
+
+
+        <Swiper
+          modules={[Pagination, Navigation, Keyboard, EffectCreative]}
+          pagination={{ clickable:true, type:'bullets' }}
+          navigation
+          keyboard={{enabled:true}}
+          effect="creative"
+          creativeEffect={{
+            prev: { shadow: true, translate: ['-20%', 0, -1] },
+            next: { translate: ['100%', 0, 0] },
+          }}
+          onSwiper={(s)=>{swiperRef.current = s}}
+          className="mySwiper"
+        >
+          <SwiperSlide><TitleSlide/></SwiperSlide>
+          <SwiperSlide><DefinitionSlide/></SwiperSlide>
+          <SwiperSlide>
+            <NewtonSlide />
+          </SwiperSlide>
+          <SwiperSlide><GravitySlide/></SwiperSlide>
+          <SwiperSlide><MotionSlide/></SwiperSlide>
+          <SwiperSlide><ForceSlide/></SwiperSlide>
+          <SwiperSlide><EnergySlide/></SwiperSlide>
+          <SwiperSlide><PendulumSlide/></SwiperSlide>
+          <SwiperSlide><MagnetSlide/></SwiperSlide>
+          <SwiperSlide><LightMixSlide/></SwiperSlide>
+          <SwiperSlide><WaveSlide/></SwiperSlide>
+          <SwiperSlide><ExperimentLabSlide/></SwiperSlide>
+          <SwiperSlide>
+            <SubscribeSlide />
+          </SwiperSlide>
+          <SwiperSlide><QuizSlide/></SwiperSlide>
+          <SwiperSlide><PromoSlide/></SwiperSlide>
+          <SwiperSlide><OutroSlide/></SwiperSlide>
         </Swiper>
-        <div className="footer">Subscribe</div>
+        <div className="footer">Made with Swiper + GSAP - Cartoon vibes, serious science</div>
       </div>
     </div>
   )
