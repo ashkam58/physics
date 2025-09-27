@@ -765,6 +765,13 @@ body::after{
 .liquid{ position:absolute; left:0; right:0; bottom:0; background:linear-gradient(180deg, rgba(122,253,247,0.9), rgba(255,132,216,0.6)); transition:height 0.4s ease; }
 .bubbles{ position:absolute; inset:0; pointer-events:none }
 .lab-bubble{ position:absolute; border-radius:50%; background:radial-gradient(circle at 30% 30%, #fff, rgba(255,255,255,0.9)); box-shadow:0 8px 18px rgba(0,0,0,0.3); opacity:0.9 }
+/* CSS-driven bubble float to reduce JS work */
+.lab-bubble{
+  animation:labFloat var(--dur, 3s) ease-in-out infinite;
+  animation-delay: var(--delay, 0s);
+  will-change:transform, opacity;
+}
+@keyframes labFloat{ 0%{transform:translateY(0)} 50%{transform:translateY(-26px)} 100%{transform:translateY(0)} }
 .lab-gif{ opacity:0.92 }
 
 

@@ -701,26 +701,56 @@ function ExperimentLabSlide(){
   const scope = useEnterAnimation([])
   const [concentration, setConcentration] = useState(30)
   const bubblesRef = useRef(null)
-
+  // create a small pool of CSS-animated bubbles and update on concentration change
   useEffect(()=>{
     const node = bubblesRef.current
     if(!node) return
-    // regenerate simple bubble elements
-    node.innerHTML = ''
-    const count = Math.max(8, Math.floor(concentration/4))
-    for(let i=0;i<count;i++){
-      const b = document.createElement('div')
-      b.className = 'lab-bubble'
-      const size = 8 + Math.random()* (concentration/4)
-      b.style.width = `${size}px`
-      b.style.height = `${size}px`
-      b.style.left = `${10 + Math.random()*80}%`
-      b.style.top = `${20 + Math.random()*60}%`
-      b.style.opacity = `${0.5 + Math.random()*0.6}`
-      node.appendChild(b)
-      gsap.to(b, {y:-20 - Math.random()*40, duration:2 + Math.random()*2, yoyo:true, repeat:-1, ease:'sine.inOut', delay:Math.random()*1.2})
+    const MAX = 20
+    if(!node.dataset.inited){
+      // create pool
+      for(let i=0;i<MAX;i++){
+        const b = document.createElement('div')
+        b.className = 'lab-bubble'
+        // randomized animation timing via CSS vars
+        b.style.setProperty('--dur', `${2 + Math.random()*2}s`)
+        b.style.setProperty('--delay', `${Math.random()*1.2}s`)
+        node.appendChild(b)
+      }
+      node.dataset.inited = '1'
     }
-  }, [concentration])
+    const update = ()=>{
+      const count = Math.max(6, Math.min(20, Math.floor(concentration/4)))
+      const children = Array.from(node.children)
+      children.forEach((b, i)=>{
+        if(i < count){
+          const size = 6 + Math.random()*(concentration/3)
+          b.style.width = `${size}px`
+          b.style.height = `${size}px`
+          b.style.left = `${8 + Math.random()*84}%`
+          b.style.top = `${24 + Math.random()*56}%`
+          b.style.opacity = `${0.5 + Math.random()*0.5}`
+          b.style.display = ''
+        }else{
+          b.style.display = 'none'
+        }
+      })
+    }
+    update()
+
+    // pause animations when the slide is not active (reduce CPU)
+    const slideEl = scope.current && scope.current.closest ? scope.current.closest('.swiper-slide') : null
+    if(slideEl){
+      const observer = new MutationObserver(()=>{
+        const active = slideEl.classList.contains('swiper-slide-active')
+        Array.from(bubblesRef.current.children).forEach(b => b.style.animationPlayState = active ? 'running' : 'paused')
+      })
+      observer.observe(slideEl, {attributes:true, attributeFilter:['class']})
+      // set initial state
+      const active = slideEl.classList.contains('swiper-slide-active')
+      Array.from(bubblesRef.current.children).forEach(b => b.style.animationPlayState = active ? 'running' : 'paused')
+      return ()=>observer.disconnect()
+    }
+  }, [concentration, scope])
 
   return (
     <div ref={scope} className="slide-card">
@@ -791,7 +821,7 @@ function QuizSlide(){
           })}
         </div>
         {celebrate && <svg className="confetti">
-          {[...Array(50)].map((_,i)=>{
+          {[...Array(20)].map((_,i)=>{
             const x = Math.random()*100; const y = -5 - Math.random()*10
             const dur = 0.8+Math.random()*0.7
             const size = 4+Math.random()*6
