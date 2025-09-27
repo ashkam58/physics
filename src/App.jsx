@@ -891,7 +891,7 @@ export default function App(){
       <div className="content-shell">
         <div className="header">
           <div className="logo">CP</div>
-          <div className="brand"><b>Cartoon Physics</b> - Swipe to learn</div>
+          <div className="brand"><b>What is physics?</b> - Swipe to learn</div>
         </div>
         <Swiper
           modules={[Pagination, Navigation, Keyboard, EffectCreative]}
@@ -927,7 +927,7 @@ export default function App(){
           <SwiperSlide><PromoSlide/></SwiperSlide>
           <SwiperSlide><OutroSlide/></SwiperSlide>
         </Swiper>
-        <div className="footer">Made with Swiper + GSAP - Cartoon vibes, serious science</div>
+        <div className="footer">Subscribe</div>
       </div>
     </div>
   )
